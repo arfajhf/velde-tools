@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';import {tools} from '../../data/tools';
+---
+<BaseLayout title="All Free Online Tools" description="Browse Veldeonix developer, marketing, and productivity tools." canonical="/tools/">
+<section class="page-hero"><div class="container"><div class="breadcrumbs"><a href="/">Home</a><span>/</span><span>Tools</span></div><h1>All tools</h1><p>Browser-based utilities with transparent methods and local-first processing where practical.</p><div class="search-box" style="margin-left:0"><span class="search-icon">⌕</span><input id="q" type="search" placeholder="Search tools..."></div></div></section>
+<section class="section-tight"><div class="container"><div class="grid grid-3" id="grid">{tools.map(t=><a class="card card-hover tool-card item" href={`/tools/${t.slug}/`} data-search={`${t.name} ${t.description}`.toLowerCase()}><div class="tool-icon">{t.icon}</div><h3>{t.name}</h3><p>{t.description}</p><div class="meta"><span class="badge">{t.cat}</span><span>Open tool →</span></div></a>)}<div class="empty hidden" id="none">No tool matches your search.</div></div></div></section>
+</BaseLayout>
+<script>
+const q=document.querySelector<HTMLInputElement>('#q');
+const items=[...document.querySelectorAll<HTMLElement>('#grid .item')];
+const none=document.querySelector<HTMLElement>('#none');
+q?.addEventListener('input',()=>{const s=q.value.trim().toLowerCase();let n=0;items.forEach(x=>{const ok=!s||(x.dataset.search??'').includes(s);x.classList.toggle('hidden',!ok);if(ok)n++});none?.classList.toggle('hidden',n>0)});
+</script>

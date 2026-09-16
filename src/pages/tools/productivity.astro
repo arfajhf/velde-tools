@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';import {byCat,categoryMeta} from '../../data/tools';
+const cat='productivity' as const;const meta=categoryMeta[cat];const items=byCat(cat);
+---
+<BaseLayout title={meta.name} description={meta.description} canonical={`/tools/${cat}/`}>
+<section class="page-hero"><div class="container"><div class="breadcrumbs"><a href="/">Home</a><span>/</span><a href="/tools/">Tools</a><span>/</span><span>{meta.name}</span></div><h1>{meta.name}</h1><p>{meta.description}</p></div></section>
+<section class="section-tight"><div class="container"><div class="grid grid-3">{items.map(t=><a class="card card-hover tool-card" href={`/tools/${t.slug}/`}><div class="tool-icon">{t.icon}</div><h3>{t.name}</h3><p>{t.description}</p><div class="meta"><span class="badge">{t.cat}</span><span>Open tool →</span></div></a>)}</div></div></section>
+</BaseLayout>

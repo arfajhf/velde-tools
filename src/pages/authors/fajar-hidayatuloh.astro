@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';import {guides} from '../../data/guides';
+---
+<BaseLayout title="Fajar Hidayatuloh" description="Author and maintainer profile for Fajar Hidayatuloh at Veldeonix Labs." canonical="/authors/fajar-hidayatuloh/">
+<section class="page-hero"><div class="narrow"><div class="breadcrumbs"><a href="/">Home</a><span>/</span><span>Author</span></div><h1>Fajar Hidayatuloh</h1><p>Creator and maintainer of Veldeonix Labs, focused on practical web development, digital tools, and clear technical explanations.</p></div></section>
+<section class="section-tight"><article class="narrow prose"><h2>Role at Veldeonix</h2><p>Fajar develops and maintains the website, reviews tool behavior, and edits supporting guides before publication. The author profile makes editorial responsibility visible instead of publishing guides under an anonymous administrator account.</p><h2>Editorial approach</h2><p>Guides aim to answer a specific question, show the relevant method, identify important limitations, and link to a primary reference when it materially supports a factual claim.</p></article></section>
+<section class="section"><div class="container"><div class="section-head"><div><h2>Published guides</h2></div></div><div class="grid grid-3">{guides.map(g=><a class="card card-hover guide-card" href={`/guides/${g.slug}/`}><span class="badge">{g.cat}</span><h3>{g.title}</h3><p>{g.description}</p><span class="text-link">Read →</span></a>)}</div></div></section>
+</BaseLayout>

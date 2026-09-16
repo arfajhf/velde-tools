@@ -1,0 +1,7 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';import {guides} from '../../data/guides';
+---
+<BaseLayout title="Practical Guides" description="Practical guides that explain the formulas, formats, and workflows behind Veldeonix tools." canonical="/guides/">
+<section class="page-hero"><div class="container"><div class="breadcrumbs"><a href="/">Home</a><span>/</span><span>Guides</span></div><h1>Guides</h1><p>Focused explanations that support real tool usage, clear examples, and transparent limitations.</p></div></section>
+<section class="section-tight"><div class="container"><div class="grid grid-3">{guides.map(g=><a class="card card-hover guide-card" href={`/guides/${g.slug}/`}><span class="badge">{g.cat}</span><h3>{g.title}</h3><p>{g.description}</p><span class="text-link">{g.minutes} min read →</span></a>)}</div></div></section>
+</BaseLayout>
