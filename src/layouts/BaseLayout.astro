@@ -9,6 +9,7 @@ const verify=import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION||'';
 const path=Astro.url.pathname;
 ---
 <!doctype html><html lang="en"><head>
+<meta name="google-adsense-account" content="ca-pub-2182775434909604">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="generator" content={Astro.generator}><meta name="theme-color" content="#635bff">
 <title>{full}</title><meta name="description" content={description}><link rel="canonical" href={canon}><link rel="icon" href="/favicon.svg"><link rel="manifest" href="/site.webmanifest">
 {noindex&&<meta name="robots" content="noindex,nofollow"/>}{verify&&<meta name="google-site-verification" content={verify}/>}<meta property="og:type" content="website"><meta property="og:site_name" content="Veldeonix Labs"><meta property="og:title" content={full}><meta property="og:description" content={description}><meta property="og:url" content={canon}><meta property="og:image" content="https://veldeonix.com/og-default.png"><meta name="twitter:card" content="summary_large_image">{jsonLd&&<script type="application/ld+json" set:html={JSON.stringify(jsonLd)}/>}<script is:inline>(()=>{try{const s=localStorage.getItem('veldeonix-theme');if(s==='dark'||(!s&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark'}catch{}})()</script>
