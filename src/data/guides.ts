@@ -1,5 +1,6 @@
-export type Guide={slug:string;title:string;description:string;cat:string;minutes:number;tool?:string;sections:{h:string;p?:string[];list?:string[];formula?:string;example?:string}[];sources?:{label:string;href:string}[]};
-export const guides:Guide[]=[
+import { guideUpdates } from './guide-updates';
+export type Guide={slug:string;title:string;description:string;cat:string;minutes:number;tool?:string;sections:{h:string;p?:string[];list?:string[];formula?:string;example?:string}[];sources?:{label:string;href:string}[];published?:string;updated?:string};
+const baseGuides:Guide[]=[
 {slug:'what-is-roi',title:'What Is ROI? Formula, Example, and Practical Interpretation',description:'A practical explanation of return on investment, including the formula, example, and limits of the metric.',cat:'marketing',minutes:7,tool:'roi-calculator',sections:[
 {h:'What ROI measures',p:['Return on investment compares the gain from an activity with the cost required to produce that gain. A positive ROI means the measured return exceeded the measured cost. A negative ROI means the measured return was lower than the cost.','ROI is only comparable when the inputs are defined consistently. If one project includes labor and platform fees while another includes only direct cash spend, their percentages do not describe the same scope.']},
 {h:'The standard ROI formula',formula:'ROI = ((Revenue - Cost) / Cost) × 100',p:['Revenue minus cost is measured profit. Dividing that profit by cost shows the return relative to the amount invested.']},
@@ -51,4 +52,18 @@ export const guides:Guide[]=[
 {h:'Safe workflow',list:['Generate locally.','Use a long value accepted by the service.','Store it in a trusted password manager.','Do not reuse it on another service.','Enable stronger authentication where available.']}
 ],sources:[{label:'NIST Digital Identity Guidelines',href:'https://pages.nist.gov/800-63-4/sp800-63b.html'}]}
 ];
-export const getGuide=(slug:string)=>guides.find(g=>g.slug===slug);
+
+const updatedSlugs = new Set(
+  guideUpdates.map(guide => guide.slug)
+);
+
+export const guides: Guide[] = [
+  ...baseGuides.filter(
+    guide => !updatedSlugs.has(guide.slug)
+  ),
+
+  ...guideUpdates
+];
+
+export const getGuide = (slug: string) =>
+  guides.find(guide => guide.slug === slug);

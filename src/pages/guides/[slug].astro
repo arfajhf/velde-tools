@@ -1,9 +1,200 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';import {guides,type Guide} from '../../data/guides';import {getTool} from '../../data/tools';
-export function getStaticPaths(){return guides.map(guide=>({params:{slug:guide.slug},props:{guide}}));}
-const {guide}=Astro.props as {guide:Guide};const tool=guide.tool?getTool(guide.tool):undefined;const jsonLd={'@context':'https://schema.org','@type':'Article',headline:guide.title,description:guide.description,datePublished:'2026-09-16',dateModified:'2026-09-16',author:{'@type':'Person',name:'Fajar Hidayatuloh',url:'https://veldeonix.com/authors/fajar-hidayatuloh/'},publisher:{'@type':'Organization',name:'Veldeonix Labs',url:'https://veldeonix.com/'}};
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { guides, type Guide } from '../../data/guides';
+import { getTool } from '../../data/tools';
+
+export function getStaticPaths() {
+  return guides.map((guide) => ({
+    params: { slug: guide.slug },
+    props: { guide },
+  }));
+}
+
+const formatGuideDate = (date: string): string => {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString(
+    'en-US',
+    {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }
+  );
+};
+
+const { guide } = Astro.props as { guide: Guide };
+const tool = guide.tool ? getTool(guide.tool) : undefined;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: guide.title,
+  description: guide.description,
+  datePublished: guide.published ?? '2026-09-16',
+  dateModified: guide.updated ?? guide.published ?? '2026-09-16',
+  author: {
+    '@type': 'Person',
+    name: 'Fajar Hidayatuloh',
+    url: 'https://veldeonix.com/authors/fajar-hidayatuloh/',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Veldeonix Labs',
+    url: 'https://veldeonix.com/',
+  },
+};
 ---
-<BaseLayout title={guide.title} description={guide.description} canonical={`/guides/${guide.slug}/`} jsonLd={jsonLd}>
-<section class="page-hero"><div class="narrow"><div class="breadcrumbs"><a href="/">Home</a><span>/</span><a href="/guides/">Guides</a><span>/</span><span>{guide.cat}</span></div><h1>{guide.title}</h1><p>{guide.description}</p><div class="author"><div class="avatar">FH</div><div><strong><a href="/authors/fajar-hidayatuloh/">Fajar Hidayatuloh</a></strong><span>Published and reviewed September 16, 2026 · {guide.minutes} min read</span></div></div></div></section>
-<section class="section-tight"><article class="narrow prose">{guide.sections.map(s=><section><h2>{s.h}</h2>{s.p?.map(p=><p>{p}</p>)}{s.list&&<ul>{s.list.map(i=><li>{i}</li>)}</ul>}{s.formula&&<div class="formula">{s.formula}</div>}{s.example&&<div class="example">{s.example}</div>}</section>)}{tool&&<><h2>Related tool</h2><p>Use the <a href={`/tools/${tool.slug}/`}>{tool.name}</a> to apply this method directly in your browser.</p></>}{guide.sources&&<><h2>Sources</h2><ul>{guide.sources.map(s=><li><a href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a></li>)}</ul></>}<h2>Editorial note</h2><p>Veldeonix reviews factual claims before publication and uses AI-assisted software only as a support tool. See the <a href="/legal/editorial-policy/">Editorial Policy</a> and <a href="/legal/corrections-policy/">Corrections Policy</a>.</p></article></section>
+
+<BaseLayout
+  title={guide.title}
+  description={guide.description}
+  canonical={`/guides/${guide.slug}/`}
+  jsonLd={jsonLd}
+>
+  <section class="page-hero">
+    <div class="narrow">
+      <div class="breadcrumbs">
+        <a href="/">Home</a>
+        <span>/</span>
+        <a href="/guides/">Guides</a>
+        <span>/</span>
+        <span>{guide.cat}</span>
+      </div>
+      <h1>{guide.title}</h1>
+      <p>{guide.description}</p>
+      <div class="author">
+        <div class="avatar">FH</div>
+        <div>
+          <strong>
+            <a href="/authors/fajar-hidayatuloh/">Fajar Hidayatuloh</a>
+          </strong>
+          <span>
+            Published {formatGuideDate(guide.published ?? '2026-09-16')}
+
+            {guide.updated && (
+                <>
+                {' · '}
+                Updated {formatGuideDate(guide.updated)}
+                </>
+            )}
+
+            {' · '}
+            {guide.minutes} min read
+         </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <article class="narrow prose">
+      {
+        guide.sections.map((s) => (
+          <section>
+            <h2>{s.h}</h2>
+            {s.p?.map((p) => (
+              <p>{p}</p>
+            ))}
+            {s.list && (
+              <ul>
+                {s.list.map((i) => (
+                  <li>{i}</li>
+                ))}
+              </ul>
+            )}
+            {s.formula && <div class="formula">{s.formula}</div>}
+            {s.example && <div class="example">{s.example}</div>}
+          </section>
+        ))
+      }
+
+      {
+        tool && (
+          <>
+            <h2>Related tool</h2>
+            <p>
+              Use the <a href={`/tools/${tool.slug}/`}>{tool.name}</a> to apply this method directly in your browser.
+            </p>
+          </>
+        )
+      }
+
+      {
+        guide.sources && (
+          <>
+            <h2>Sources</h2>
+            <ul>
+              {guide.sources.map((s) => (
+                <li>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer">
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+
+      {
+        ['how-to-calculate-cpc-and-cpm', 'what-is-roas', 'roi-vs-roas'].includes(guide.slug) && (
+          <section>
+            <h2>Related Marketing Guides</h2>
+            <p>
+              Explore related advertising metrics and learn how they connect to campaign performance.
+            </p>
+            <ul>
+              {
+                [
+                  {
+                    slug: 'how-to-calculate-cpc-and-cpm',
+                    title: 'How to Calculate CPC and CPM',
+                  },
+                  {
+                    slug: 'what-is-roas',
+                    title: 'How to Calculate ROAS',
+                  },
+                  {
+                    slug: 'roi-vs-roas',
+                    title: 'ROI vs ROAS',
+                  },
+                  {
+                    slug: 'click-through-rate-explained',
+                    title: 'Click-Through Rate Explained',
+                  },
+                ]
+                  .filter((item) => item.slug !== guide.slug)
+                  .map((item) => (
+                    <li>
+                      <a href={`/guides/${item.slug}/`}>{item.title}</a>
+                    </li>
+                  ))
+              }
+            </ul>
+
+            <h2>Related Marketing Tools</h2>
+            <ul>
+              <li>
+                <a href="/tools/cpm-cpc-calculator/">CPM & CPC Calculator</a>
+              </li>
+              <li>
+                <a href="/tools/roas-calculator/">ROAS Calculator</a>
+              </li>
+              <li>
+                <a href="/tools/roi-calculator/">ROI Calculator</a>
+              </li>
+              <li>
+                <a href="/tools/ctr-calculator/">CTR Calculator</a>
+              </li>
+            </ul>
+          </section>
+        )
+      }
+
+      <h2>Editorial note</h2>
+      <p>
+        Veldeonix reviews factual claims before publication and uses AI-assisted software only as a support tool. See the <a href="/legal/editorial-policy/">Editorial Policy</a> and <a href="/legal/corrections-policy/">Corrections Policy</a>.
+      </p>
+    </article>
+  </section>
 </BaseLayout>
