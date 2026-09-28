@@ -1,15 +1,56 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {tools,related,categoryMeta,type Tool} from '../../data/tools';
+import { getToolContent } from '../../data/tool-content';
 export function getStaticPaths(){return tools.map(tool=>({params:{slug:tool.slug},props:{tool}}));}
 const {tool}=Astro.props as {tool:Tool};const rel=related(tool);const cat=categoryMeta[tool.cat];
-const jsonLd={'@context':'https://schema.org','@type':'WebApplication',name:tool.name,description:tool.description,applicationCategory:'UtilitiesApplication',operatingSystem:'Any',url:`https://veldeonix.com/tools/${tool.slug}/`,offers:{'@type':'Offer',price:'0',priceCurrency:'USD'}};
+const content = getToolContent(tool.slug);
+const pageTitle =
+  content?.seoTitle ?? tool.name;
+const pageDescription =
+  content?.metaDescription ?? tool.description;
+const webApplicationLd = {
+  '@type': 'WebApplication',
+  name: tool.name,
+  description: pageDescription,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any',
+  url: `https://veldeonix.com/tools/${tool.slug}/`,
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD'
+  }
+};
+
+const jsonLd = content?.faqs?.length
+  ? {
+      '@context': 'https://schema.org',
+      '@graph': [
+        webApplicationLd,
+        {
+          '@type': 'FAQPage',
+          mainEntity: content.faqs.map((faq) => ({
+            '@type': 'Question',
+            name: faq.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: faq.answer
+            }
+          }))
+        }
+      ]
+    }
+  : {
+      '@context': 'https://schema.org',
+      ...webApplicationLd
+    };
 const formula:Record<string,string>={
 'roi-calculator':'ROI = ((Revenue - Cost) / Cost) × 100','roas-calculator':'ROAS = Attributed revenue / Ad spend','ctr-calculator':'CTR = (Clicks / Impressions) × 100','cpm-cpc-calculator':'CPM = (Ad spend / Impressions) × 1,000\nCPC = Ad spend / Clicks','json-formatter':'JSON.parse(input) → JSON.stringify(value, null, 2)','base64-encoder-decoder':'Text → UTF-8 bytes → Base64','uuid-generator':'Browser crypto.randomUUID() → UUID v4','unix-timestamp-converter':'JavaScript Date uses milliseconds from the Unix epoch','word-counter':'Reading time estimate = words / 200','password-generator':'Characters are selected with crypto.getRandomValues()','qr-code-generator':'Input text → local QR encoder → canvas','case-converter':'Text → word boundaries → selected case rule'};
 const example:Record<string,string>={
 'roi-calculator':'Cost 1,000 and revenue 1,500 produces profit 500 and ROI 50%.','roas-calculator':'Revenue 8,000 divided by ad spend 2,000 equals 4.0× ROAS, or 400%.','ctr-calculator':'500 clicks from 25,000 impressions produces a 2% CTR.','cpm-cpc-calculator':'Spend 1,000 with 200,000 impressions and 2,500 clicks produces CPM 5 and CPC 0.4.','json-formatter':'{"name":"Veldeonix","active":true} becomes readable multi-line JSON after formatting.','base64-encoder-decoder':'Hello encodes to SGVsbG8=.','uuid-generator':'0f8fad5b-d9cb-469f-a165-70867728950e follows the common UUID text shape.','unix-timestamp-converter':'A milliseconds value is roughly 1,000 times the equivalent seconds value.','word-counter':'A 1,000-word article is estimated as a 5-minute read at 200 words per minute.','password-generator':'A longer random password has a much larger possible search space than a short predictable password.','qr-code-generator':'Entering https://veldeonix.com creates a QR symbol representing that URL.','case-converter':'Veldeonix digital tools can become veldeonixDigitalTools, VeldeonixDigitalTools, or veldeonix-digital-tools.'};
 ---
-<BaseLayout title={tool.name} description={tool.description} canonical={`/tools/${tool.slug}/`} jsonLd={jsonLd}>
+<BaseLayout title={pageTitle} description={pageDescription} canonical={`/tools/${tool.slug}/`} jsonLd={jsonLd}>
 <section class="page-hero"><div class="container"><div class="breadcrumbs"><a href="/">Home</a><span>/</span><a href="/tools/">Tools</a><span>/</span><a href={`/tools/${tool.cat}/`}>{cat.name}</a></div><h1>{tool.name}</h1><p>{tool.intro}</p></div></section>
 <section class="section-tight"><div class="container tool-shell"><div>
 <div class="tool-panel" data-tool={tool.slug}>
@@ -27,8 +68,240 @@ const example:Record<string,string>={
 {tool.slug==='case-converter'&&<><div class="field"><label>Text</label><textarea class="textarea" id="text" style="min-height:220px" placeholder="Paste or type text..."></textarea></div><div class="actions"><button class="btn btn-primary" data-case="sentence">Sentence case</button><button class="btn" data-case="title">Title Case</button><button class="btn" data-case="upper">UPPERCASE</button><button class="btn" data-case="lower">lowercase</button><button class="btn" data-case="camel">camelCase</button><button class="btn" data-case="pascal">PascalCase</button><button class="btn" data-case="snake">snake_case</button><button class="btn" data-case="kebab">kebab-case</button></div><div class="actions"><button class="btn" id="copy">Copy</button><button class="btn" id="reset">Clear</button></div></>}
 <div class="notice error hidden" id="err" style="margin-top:14px"></div>
 </div>
-<article class="prose" style="margin-top:34px"><h2 id="how-to-use">How to use {tool.short}</h2><p>Enter the values or text requested by the tool, run the action, then review the result before copying or using it elsewhere. Keep related inputs in the same unit, currency, reporting period, or data format.</p><h2 id="how-it-works">How it works</h2><div class="formula">{formula[tool.slug]}</div><p>The tool runs in the browser and exposes the core method instead of hiding the calculation or transformation.</p><h2 id="example">Example</h2><div class="example">{example[tool.slug]}</div><h2 id="privacy">Privacy and data processing</h2><div class="notice"><strong>Local-first:</strong> {tool.privacy}</div><h2 id="limitations">Important limitations</h2><p>Results are provided for general informational use. Verify units, assumptions, source data, and context before relying on an output for an important business, technical, security, or financial decision.</p><h2 id="faq">Frequently asked questions</h2><div class="faq"><details><summary>Does this tool send my input to Veldeonix?</summary><p>No for this release. The current implementation runs the calculation or transformation in your browser.</p></details><details><summary>Can I rely on the result without checking it?</summary><p>For low-risk everyday use, the tool is designed to be convenient. For important decisions, verify the inputs, assumptions, and result independently.</p></details></div></article>
-</div><aside class="card side-card"><h3>On this page</h3><ul><li><a href="#how-to-use">How to use</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#example">Example</a></li><li><a href="#privacy">Privacy</a></li><li><a href="#limitations">Limitations</a></li><li><a href="#faq">FAQ</a></li></ul><div class="muted" style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px;font-size:12px">Reviewed September 16, 2026</div></aside></div></section>
+<article class="prose" style="margin-top:34px">
+
+  {
+    content ? (
+      <>
+        <h2 id="how-to-use">
+          How to use {tool.short}
+        </h2>
+
+        <ol>
+          {content.howToUse.map((step) => (
+            <li>{step}</li>
+          ))}
+        </ol>
+
+
+        <h2 id="how-it-works">
+          How {tool.short} works
+        </h2>
+
+        {content.howItWorks.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+
+
+        <div class="formula">
+          {content.formula}
+        </div>
+
+
+        <h2 id="example">
+          {content.example.title}
+        </h2>
+
+        <div class="example">
+          {content.example.lines.map((line) => (
+            <>
+              {line}
+              <br />
+            </>
+          ))}
+        </div>
+
+
+        <h2 id="use-cases">
+          When this tool is useful
+        </h2>
+
+        <ul>
+          {content.useCases.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+
+
+        <h2 id="privacy">
+          Privacy and data processing
+        </h2>
+
+        <div class="notice">
+          <strong>Local-first processing</strong>
+
+          <ul>
+            {content.privacyNotes.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+
+        <h2 id="limitations">
+          Important limitations
+        </h2>
+
+        <ul>
+          {content.limitations.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+
+
+        <h2 id="faq">
+          Frequently asked questions
+        </h2>
+
+        <div class="faq">
+          {content.faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+
+
+        {
+          content.relatedGuides.length > 0 && (
+            <>
+              <h2 id="related-guides">
+                Related guides
+              </h2>
+
+              <ul>
+                {content.relatedGuides.map((guide) => (
+                  <li>
+                    <a href={guide.href}>
+                      {guide.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+
+      </>
+    ) : (
+      <>
+        <h2 id="how-to-use">
+          How to use {tool.short}
+        </h2>
+
+        <p>
+          Enter the values or text requested by the tool,
+          run the action, then review the result before
+          copying or using it elsewhere.
+        </p>
+
+        <h2 id="how-it-works">
+          How it works
+        </h2>
+
+        <div class="formula">
+          {formula[tool.slug]}
+        </div>
+
+        <p>
+          The tool runs in the browser and exposes the
+          core method instead of hiding the calculation
+          or transformation.
+        </p>
+
+        <h2 id="example">
+          Example
+        </h2>
+
+        <div class="example">
+          {example[tool.slug]}
+        </div>
+
+        <h2 id="privacy">
+          Privacy and data processing
+        </h2>
+
+        <div class="notice">
+          <strong>Local-first:</strong> {tool.privacy}
+        </div>
+
+        <h2 id="limitations">
+          Important limitations
+        </h2>
+
+        <p>
+          Verify inputs, assumptions, units, and context
+          before relying on the result for an important
+          decision.
+        </p>
+      </>
+    )
+  }
+
+</article>
+</div><aside class="card side-card">
+
+  <h3>On this page</h3>
+
+  <ul>
+    <li>
+      <a href="#how-to-use">How to use</a>
+    </li>
+
+    <li>
+      <a href="#how-it-works">How it works</a>
+    </li>
+
+    <li>
+      <a href="#example">Example</a>
+    </li>
+
+    {content && (
+      <li>
+        <a href="#use-cases">Use cases</a>
+      </li>
+    )}
+
+    <li>
+      <a href="#privacy">Privacy</a>
+    </li>
+
+    <li>
+      <a href="#limitations">Limitations</a>
+    </li>
+
+    {content && (
+      <li>
+        <a href="#faq">FAQ</a>
+      </li>
+    )}
+
+    {content?.relatedGuides?.length && (
+      <li>
+        <a href="#related-guides">
+          Related guides
+        </a>
+      </li>
+    )}
+  </ul>
+
+  <div
+    class="muted"
+    style="
+      margin-top:18px;
+      border-top:1px solid var(--line);
+      padding-top:14px;
+      font-size:12px;
+    "
+  >
+    Reviewed {
+      content?.reviewed ??
+      'September 16, 2026'
+    }
+  </div>
+
+</aside></div></section>
 <section class="section"><div class="container"><div class="section-head"><div><h2>Related tools</h2><p>Continue with utilities that use related metrics or data.</p></div><a class="text-link" href="/tools/">All tools →</a></div><div class="grid grid-3">{rel.map(t=><a class="card card-hover tool-card" href={`/tools/${t.slug}/`}><div class="tool-icon">{t.icon}</div><h3>{t.name}</h3><p>{t.description}</p><div class="meta"><span class="badge">{t.cat}</span><span>Open tool →</span></div></a>)}</div></div></section>
 </BaseLayout>
 <script>
